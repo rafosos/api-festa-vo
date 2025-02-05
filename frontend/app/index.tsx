@@ -20,7 +20,7 @@ export default function Index() {
     const [loading, setLoading] = useState(false);
     const [stats, setStats] = useState<Stats>();
     const [filtro, setFiltro] = useState("");
-    const [filtroPresenca, setFiltroPresenca] = useState<StatusConvidadoAPI | null>(null);
+    const [filtrosPresenca, setFiltrosPresenca] = useState<StatusConvidadoAPI[]>([]);
 
     const convidadoService = ConvidadoService();
 
@@ -29,26 +29,26 @@ export default function Index() {
     }, []);
 
     useEffect(() => filtrarConvidados(), 
-    [convidados, filtro, filtroPresenca]);
+    [convidados, filtro, filtrosPresenca]);
 
     const filtrarConvidados = () => {
-        if(filtro && filtroPresenca)
+        if(filtro && filtrosPresenca.length)
             setConvidadosFiltrados(
                 convidados.filter(c => 
                     c.nome.toLowerCase().includes(filtro) &&
-                    c.status == filtroPresenca
+                    filtrosPresenca.find(f => f == c.status)
                 )
             );
-        else if (filtro && !filtroPresenca)
+        else if (filtro && !filtrosPresenca.length)
             setConvidadosFiltrados(
                 convidados.filter(c => 
                 c.nome.toLowerCase().includes(filtro)
             )
         );
-        else if (!filtro && filtroPresenca)
+        else if (!filtro && filtrosPresenca.length)
             setConvidadosFiltrados(
                 convidados.filter(c => 
-                    c.status == filtroPresenca
+                    filtrosPresenca.find(f => f == c.status)
                 )
             );
         else
@@ -56,7 +56,13 @@ export default function Index() {
     }
 
     const changeFiltroPresenca = (status: StatusConvidadoAPI) => {
-        setFiltroPresenca((prev) => prev == status ? null : status);
+        const newArray = JSON.parse(JSON.stringify(filtrosPresenca)) as StatusConvidadoAPI[];
+        const i = newArray.findIndex(f => f == status)
+        if (i == -1)
+            newArray.push(status)
+        else
+            newArray.splice(i, 1);
+        setFiltrosPresenca(newArray);
     }
   
     const changeTheme = () => 
@@ -109,8 +115,7 @@ export default function Index() {
                     </TouchableOpacity>
                 </View> 
 
-
-                {stats && <>
+                {stats ? <>
                     <StyledText style={styles.titleStats}>Convites:</StyledText>
                     <FlatList
                         showsHorizontalScrollIndicator={false}
@@ -120,7 +125,7 @@ export default function Index() {
                                 style={[
                                     styles[theme], 
                                     styles.cardStats, 
-                                    filtroPresenca ? filtroPresenca == item ? styles[theme] : 
+                                    filtrosPresenca.length ? filtrosPresenca.find(f => f == item) ? styles[theme] : 
                                         theme == "dark" ? styles.cardApagadoDark : styles.cardApagadoLight : {}
                                 ]} 
                                 onPress={() => changeFiltroPresenca(item)}
@@ -132,7 +137,7 @@ export default function Index() {
                         horizontal
                         contentContainerStyle={styles.containerStats}
                     />
-                </>}
+                </> : null}
 
                 <View style={styles.containerSubtitulo}>
                     <View style={styles.containerPesquisa}>
@@ -193,7 +198,7 @@ const styles = StyleSheet.create({
     },
     title:{
         fontFamily: fonts.padrao.Bold700,
-        fontSize: 35,
+        fontSize: 34,
     },
     botaoThemeMode:{
         position: 'absolute',

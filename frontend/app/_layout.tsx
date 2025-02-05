@@ -11,7 +11,7 @@ import { useFonts,
     Inter_800ExtraBold,
     Inter_900Black,
    } from "@expo-google-fonts/inter";
-import { Platform, StyleSheet,StatusBar, useColorScheme } from "react-native";
+import { Platform, StyleSheet,StatusBar, useColorScheme, View, ActivityIndicator } from "react-native";
 import { colors } from "@/utils/constants";
 import { ToastProvider } from "react-native-toast-notifications";
 
@@ -27,17 +27,19 @@ export default function RootLayout() {
         Inter_800ExtraBold,
         Inter_900Black,
     });
-
+    
     return (
         <ToastProvider>
-            <ThemeProvider>{  
+            <ThemeProvider>
                 <Stack screenOptions={{
                     contentStyle: [styles.AndroidSafeArea, {backgroundColor: colors[useColorScheme() ?? "light"].background}], 
                     headerShown: false
                 }}>
+                    {!loaded ? 
+                    <View><ActivityIndicator color={colors.verde.padrao} size={"large"}/></View>:
                     <Stack.Screen name="index"/>
+                }
                 </Stack>
-            }
             </ThemeProvider>
         </ToastProvider>
     )
