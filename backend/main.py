@@ -1,5 +1,6 @@
 import pandas as p
 from fastapi import FastAPI, Response
+from fastapi.responses import FileResponse
 import json
 import uvicorn
 from enum import Enum
@@ -20,6 +21,10 @@ class Convidado(BaseModel):
     nome: str
     convite: bool
     status: Status_Presenca
+
+@app.get('/planilha')
+def get_file():
+    return FileResponse("./convidados.xlsx")
 
 @app.post("/")
 def novo_convidado(convidado: Convidado):
